@@ -91,7 +91,7 @@ const Earth = ({ coverageData }) => {
     <group ref={earthRef}>
       <Sphere 
         args={[earth_radius, 40, 40]} 
-        scale={0}
+        scale={1}
         position={[0, 0, 0]}
       >
         <meshStandardMaterial
