@@ -1,0 +1,28 @@
+[
+  { "location": "c1", "satellites": ["s1", "s4", "s6"], "coverage": 98.5 },
+  { "location": "c2", "satellites": ["s3", "s1", "s9"], "coverage": 95.2 },
+  { "location": "c3", "satellites": ["s2", "s5", "s8"], "coverage": 96.7 },
+  {
+    "location": "c4",
+    "satellites": ["s7", "s10", "s15", "s20"],
+    "coverage": 99.1
+  },
+  { "location": "c5", "satellites": ["s12", "s11"], "coverage": 92.3 },
+  {
+    "location": "c6",
+    "satellites": ["s13", "s3", "s6", "s14"],
+    "coverage": 97.8
+  },
+  { "location": "c7", "satellites": ["s16", "s17"], "coverage": 94.5 },
+  { "location": "c8", "satellites": ["s18", "s9", "s21"], "coverage": 93.4 },
+  {
+    "location": "c9",
+    "satellites": ["s22", "s19", "s24", "s25"],
+    "coverage": 96.0
+  },
+  {
+    "location": "c10",
+    "satellites": ["s26", "s27", "s28", "s30"],
+    "coverage": 98.0
+  }
+]
