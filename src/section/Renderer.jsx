@@ -17,7 +17,7 @@ function randomAxisPoints(radius) {
   return [x, y, z];
 }
 
-const TextBoard = ({ position, text }) => {
+const TextBoard = ({ position, text, size }) => {
   const textRef = useRef();
   const { camera } = useThree();
   const moveAmount = 80;
@@ -34,7 +34,7 @@ const TextBoard = ({ position, text }) => {
     }
   });
   return (
-    <Text ref={textRef} position={newPosition} fontSize={4} color="black">
+    <Text ref={textRef} position={newPosition} fontSize={size} color="black">
       {text}
     </Text>
   );
@@ -74,17 +74,30 @@ const Earth = ({ coverageData }) => {
   const createLinesBetweenSatellites = (relatedSat) => {
     scene.children = scene.children.filter((child) => !(child instanceof THREE.Line));
     relatedSat.forEach((sat, index) => {
-      if (index === 0) return;
-      const lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
-      const points = [
-        relatedSat[0].position, 
-        sat.position,
-      ];
+      if (index === 0) return; 
+  
+      const lineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+      
+      const startPos = relatedSat[0].position.clone();
+      startPos.normalize().multiplyScalar(earth_radius + 10);
+      
+      const endPos = sat.position.clone();
+      endPos.normalize().multiplyScalar(earth_radius + 10);
+
+      const midPoint = new THREE.Vector3().addVectors(startPos, endPos);
+      midPoint.normalize().multiplyScalar(earth_radius + 10);
+      
+      const curve = new THREE.CatmullRomCurve3([
+        startPos,
+        midPoint,
+        endPos,
+      ]);
+  
+      const points = curve.getPoints(30);
       const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
       const line = new THREE.Line(lineGeometry, lineMaterial);
       scene.add(line);
     });
-    
   };
 
   return (
@@ -116,7 +129,7 @@ const Earth = ({ coverageData }) => {
                 opacity={0.5}
               />
             </Sphere>
-            <TextBoard position={coverageArea} text={item.location} />
+            <TextBoard position={coverageArea} text={item.location} size={4} />
           </group>
         );
       })}
@@ -135,12 +148,12 @@ const Renderer = ({ parameters, coverage_data, selectedCoverage }) => {
       <ambientLight intensity={3} />
       <pointLight position={[10, 10, 10]} />
       <OrbitControls />
-      <Bounds fit margin={1} observe>
+      <Bounds fit margin={3} observe>
         <Earth coverageData={coverage_data} />
       </Bounds>
       {satellites.map((item, idx) => {
         const satellitePos = randomAxisPoints(
-          earth_radius + randomValue(5, 10),
+          earth_radius + 10,
         );
         return (
           <Sphere

@@ -1,5 +1,5 @@
 [
-  { "location": "c1", "satellites": ["s1", "s4", "s6"], "coverage": 98.5 },
+  { "location": "c1", "satellites": ["s1", "s3", "s4", "s5", "s6", "s10", "s20", "s45", "s21"], "coverage": 98.5 },
   { "location": "c2", "satellites": ["s3", "s1", "s9"], "coverage": 95.2 },
   { "location": "c3", "satellites": ["s2", "s5", "s8"], "coverage": 96.7 },
   {
