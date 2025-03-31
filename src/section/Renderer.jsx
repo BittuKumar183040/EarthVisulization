@@ -42,7 +42,8 @@ const TextBoard = ({ position, text, size }) => {
 
 const Earth = ({ coverageData }) => {
   const earthRef = useRef();
-  const { scene } = useThree()
+  const groupRef = useRef();
+  const { scene } = useThree();
   const earthMap = useLoader(THREE.TextureLoader, earthTexture);
   const bumpTexture = useLoader(THREE.TextureLoader, earthBumpTexture);
 
@@ -52,47 +53,68 @@ const Earth = ({ coverageData }) => {
     }
   });
 
-  const handleCoverageClick = (e, coverage) => {
-    const relatedSat = scene.children.filter((item)=>{
-      return coverage.satellites.includes(item.name.split('_')[1]);
-    })
-    // relatedSat.push(e.intersections[0].object)
-    scene.children.forEach((mesh) => {
-      if (!relatedSat.includes(mesh) && mesh.material && mesh.name.startsWith('satellite_')) {
-        mesh.material.color.set(0xffff00);
+  function groupChildren(children) {
+    children.forEach(child => {
+      if(child.type === 'Mesh' && child.name.startsWith('coverage_' )){
+        child.material.color.set(0x00ff00);
+      }
+      if (child.children && child.children.length > 0) {
+        groupChildren(child.children); 
       }
     });
-
-    relatedSat.forEach((mesh) => {
-      if (mesh.material && mesh.name.startsWith('satellite_')) {
-      mesh.material.color.set(0xff0000); 
-      }
-    });
-    createLinesBetweenSatellites(relatedSat)
   }
 
+  const handleCoverageClick = (e, coverage) => {
+    const relatedSat = scene.children.filter((item) => {
+      return coverage.satellites.includes(item.name.split('_')[1]);
+    });
+    
+    // Reset to initial color
+    scene.children.forEach((mesh) => {
+      if(mesh.type==="Group"){
+        groupChildren(mesh.children)
+      }
+      if (mesh.material) {
+        if (mesh.name.startsWith('satellite_')) {
+          mesh.material.color.set(0xffff00);
+        }
+      }
+    });
+
+    // Show Active Coverage Area
+    const interactedCoverageField = e.intersections[0].object;
+    console.log(interactedCoverageField)
+    interactedCoverageField.material.color.set(0xff0000);
+
+    // Show active connected Satellites
+    relatedSat.forEach((mesh) => {
+      if (mesh.material && mesh.name.startsWith('satellite_')) {
+        mesh.material.color.set(0xff0000);
+      }
+    });
+    createLinesBetweenSatellites(relatedSat);
+  };
+
   const createLinesBetweenSatellites = (relatedSat) => {
-    scene.children = scene.children.filter((child) => !(child instanceof THREE.Line));
+    scene.children = scene.children.filter(
+      (child) => !(child instanceof THREE.Line),
+    );
     relatedSat.forEach((sat, index) => {
-      if (index === 0) return; 
-  
+      if (index === 0) return;
+
       const lineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
-      
+
       const startPos = relatedSat[0].position.clone();
       startPos.normalize().multiplyScalar(earth_radius + 10);
-      
+
       const endPos = sat.position.clone();
       endPos.normalize().multiplyScalar(earth_radius + 10);
 
       const midPoint = new THREE.Vector3().addVectors(startPos, endPos);
       midPoint.normalize().multiplyScalar(earth_radius + 10);
-      
-      const curve = new THREE.CatmullRomCurve3([
-        startPos,
-        midPoint,
-        endPos,
-      ]);
-  
+
+      const curve = new THREE.CatmullRomCurve3([startPos, midPoint, endPos]);
+
       const points = curve.getPoints(30);
       const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
       const line = new THREE.Line(lineGeometry, lineMaterial);
@@ -102,25 +124,25 @@ const Earth = ({ coverageData }) => {
 
   return (
     <group ref={earthRef}>
-      <Sphere 
-        args={[earth_radius, 40, 40]} 
-        scale={1}
-        position={[0, 0, 0]}
-      >
+      {/* Earth Radius */}
+      <Sphere args={[earth_radius, 40, 40]} scale={1} position={[0, 0, 0]}>
         <meshStandardMaterial
           map={earthMap}
           bumpMap={bumpTexture}
           bumpScale={0.5}
         />
       </Sphere>
+
+      {/* Coverage Cones */}
       {coverageData.map((item, idx) => {
         const coverageArea = randomAxisPoints(earth_radius - 5);
         return (
-          <group key={item.location} position={coverageArea}>
-            <Sphere 
-              args={[10, 20, 20]} 
+          <group ref={groupRef} key={item.location} position={coverageArea}>
+            <Sphere
+              args={[10, 20, 20]}
               scale={1}
-              onClick={(e)=>handleCoverageClick(e, item)}
+              name={'coverage_'+item.location}
+              onClick={(e) => handleCoverageClick(e, item)}
             >
               <meshBasicMaterial
                 attach={'material'}
@@ -138,7 +160,6 @@ const Earth = ({ coverageData }) => {
 };
 
 const Renderer = ({ parameters, coverage_data, selectedCoverage }) => {
-
   const randomValue = (start, end) => {
     return Math.random() * (end - start) + start;
   };
@@ -148,17 +169,17 @@ const Renderer = ({ parameters, coverage_data, selectedCoverage }) => {
       <ambientLight intensity={3} />
       <pointLight position={[10, 10, 10]} />
       <OrbitControls />
-      <Bounds fit margin={3} observe>
+      <Bounds fit margin={1} observe>
         <Earth coverageData={coverage_data} />
       </Bounds>
+
+      {/* Satellites  */}
       {satellites.map((item, idx) => {
-        const satellitePos = randomAxisPoints(
-          earth_radius + 10,
-        );
+        const satellitePos = randomAxisPoints(earth_radius + 10);
         return (
           <Sphere
             key={item.satellite}
-            name={"satellite_"+item.satellite}
+            name={'satellite_' + item.satellite}
             args={[randomValue(0.5, 1), 5, 5]}
             scale={1}
             position={satellitePos}

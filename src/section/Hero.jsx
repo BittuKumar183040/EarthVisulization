@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import Renderer from './Renderer';
 import coverage_data from '../data/coverage.json';
+import sat_data from '../data/satellites.json';
 
 const Hero = () => {
-  const parameters = [{ satellites: 158, targets: 10 }];
+  const parameters = [{ satellites: sat_data.length, targets: coverage_data.length }];
 
   const [selectedCoverage, setSelectedCoverage] = useState(coverage_data[0]);
 

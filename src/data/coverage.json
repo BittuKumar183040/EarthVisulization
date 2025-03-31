@@ -1,5 +1,9 @@
 [
-  { "location": "c1", "satellites": ["s1", "s3", "s4", "s5", "s6", "s10", "s20", "s45", "s21"], "coverage": 98.5 },
+  {
+    "location": "c1",
+    "satellites": ["s1", "s3", "s4", "s5", "s6", "s10", "s20", "s45", "s21"],
+    "coverage": 98.5
+  },
   { "location": "c2", "satellites": ["s3", "s1", "s9"], "coverage": 95.2 },
   { "location": "c3", "satellites": ["s2", "s5", "s8"], "coverage": 96.7 },
   {
@@ -23,6 +27,11 @@
   {
     "location": "c10",
     "satellites": ["s26", "s27", "s28", "s30"],
+    "coverage": 98.0
+  },
+  {
+    "location": "c11",
+    "satellites": ["s10", "s14", "s16", "s24"],
     "coverage": 98.0
   }
 ]
