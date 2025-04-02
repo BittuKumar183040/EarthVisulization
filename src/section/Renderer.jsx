@@ -43,23 +43,19 @@ const TextBoard = ({ position, text, size }) => {
 const Earth = ({ coverageData }) => {
   const earthRef = useRef();
   const groupRef = useRef();
+  const selectedCoverage = useRef(null);
   const { scene } = useThree();
   const earthMap = useLoader(THREE.TextureLoader, earthTexture);
   const bumpTexture = useLoader(THREE.TextureLoader, earthBumpTexture);
 
-  useFrame(() => {
-    if (earthRef.current) {
-      earthRef.current.rotation.y += 0.0005;
-    }
-  });
-
+  // to get selected coverage mesh cause its inside group of meshes.
   function groupChildren(children) {
-    children.forEach(child => {
-      if(child.type === 'Mesh' && child.name.startsWith('coverage_' )){
+    children.forEach((child) => {
+      if (child.type === 'Mesh' && child.name.startsWith('coverage_')) {
         child.material.color.set(0x00ff00);
       }
       if (child.children && child.children.length > 0) {
-        groupChildren(child.children); 
+        groupChildren(child.children);
       }
     });
   }
@@ -68,10 +64,9 @@ const Earth = ({ coverageData }) => {
     const relatedSat = scene.children.filter((item) => {
       return coverage.satellites.includes(item.name.split('_')[1]);
     });
-    
     // Reset to initial color
     scene.children.forEach((mesh) => {
-      if(mesh.type==="Group"){
+      if (mesh.type === 'Group') {
         groupChildren(mesh.children)
       }
       if (mesh.material) {
@@ -83,7 +78,6 @@ const Earth = ({ coverageData }) => {
 
     // Show Active Coverage Area
     const interactedCoverageField = e.intersections[0].object;
-    console.log(interactedCoverageField)
     interactedCoverageField.material.color.set(0xff0000);
 
     // Show active connected Satellites
@@ -92,7 +86,41 @@ const Earth = ({ coverageData }) => {
         mesh.material.color.set(0xff0000);
       }
     });
+
+    // relatedSat.push(interactedCoverageField);
+    showSatellitesNames(relatedSat);
+    relatedSat.unshift(interactedCoverageField.parent);
     createLinesBetweenSatellites(relatedSat);
+  };
+
+  const showSatellitesNames = (relatedSat) => {
+    scene.children = scene.children.filter(
+      (child) => !(child instanceof THREE.Sprite),
+    );
+
+    relatedSat.forEach((sat) => {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      context.font = '44px Arial';
+      context.fillStyle = 'red';
+      context.fillText(sat.name.split('_')[1], 10, 50);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const spriteMaterial = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true,
+        opacity: 1,
+      });
+
+      const sprite = new THREE.Sprite(spriteMaterial);
+      const labelPosition = sat.position
+        .clone()
+        .normalize()
+        .multiplyScalar(earth_radius + 12); // Adjust position above the mesh
+      sprite.position.copy(labelPosition);
+      sprite.scale.set(6, 3, 1);
+      scene.add(sprite);
+    });
   };
 
   const createLinesBetweenSatellites = (relatedSat) => {
@@ -102,7 +130,6 @@ const Earth = ({ coverageData }) => {
     relatedSat.forEach((sat, index) => {
       if (index === 0) return;
 
-      const lineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
 
       const startPos = relatedSat[0].position.clone();
       startPos.normalize().multiplyScalar(earth_radius + 10);
@@ -117,7 +144,10 @@ const Earth = ({ coverageData }) => {
 
       const points = curve.getPoints(30);
       const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-      const line = new THREE.Line(lineGeometry, lineMaterial);
+
+      const lineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+        const line = new THREE.Line(lineGeometry, lineMaterial);
+
       scene.add(line);
     });
   };
@@ -141,7 +171,7 @@ const Earth = ({ coverageData }) => {
             <Sphere
               args={[10, 20, 20]}
               scale={1}
-              name={'coverage_'+item.location}
+              name={'coverage_' + item.location}
               onClick={(e) => handleCoverageClick(e, item)}
             >
               <meshBasicMaterial

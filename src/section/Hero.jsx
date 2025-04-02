@@ -4,7 +4,9 @@ import coverage_data from '../data/coverage.json';
 import sat_data from '../data/satellites.json';
 
 const Hero = () => {
-  const parameters = [{ satellites: sat_data.length, targets: coverage_data.length }];
+  const parameters = [
+    { satellites: sat_data.length, targets: coverage_data.length },
+  ];
 
   const [selectedCoverage, setSelectedCoverage] = useState(coverage_data[0]);
 
