@@ -11,8 +11,8 @@ const Hero = () => {
   const [selectedCoverage, setSelectedCoverage] = useState(coverage_data[0]);
 
   return (
-    <div className=" dark:text-white">
-      <div className=" text-xs p-1 bg-white shadow-md rounded-lg max-w-xs mx-auto">
+    <div className=" relative h-screen w-screen dark:text-white">
+      <div className=" absolute z-50 left-3 top-20 text-xs p-1 bg-white bg-opacity-80 backdrop-blur-sm shadow-md rounded-lg max-w-xs mx-auto">
         <table className="min-w-full table-auto">
           <tbody>
             {parameters.map((row, index) => (
@@ -30,7 +30,10 @@ const Hero = () => {
           </tbody>
         </table>
       </div>
-      <div className=" h-screen bg-transparent">
+      <div style={{ backgroundImage: "url(./stars.jpg)" }}
+        className=" absolute h-full w-full bg-cover bg-no-repeat bg-center bg-fixed"
+      >
+        <div className="absolute h-full w-full backdrop-blur-sm bg-black/10"></div>
         <Renderer
           parameters={parameters}
           coverage_data={coverage_data}
